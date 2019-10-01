@@ -34,32 +34,46 @@ import os
 import sys
 import argparse
 
-parser = argparse.ArgumentParser()
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', default=sys.stdin, dest='filename', \
+            help='The filename to pull input from')
+    parser.add_argument('-o', nargs='?', default=sys.stdout, dest='outfile', \
+            help='Filename to write to, default is stdout')
+    args = parser.parse_args()
+    return args
 
-parser.add_argument('filename', nargs='?', help='The filename to pull \
-        input from')
-parser.add_argument('-o', nargs='?', default=sys.stdout, dest='outfile', \
-        help='Filename to write to, default is stdout')
-args = parser.parse_args()
+def read_input(filename):
+    """Read the input from the provided filename"""
+    if filename == sys.stdin:
+        lines = sys.stdin.readlines()
+    else:
+        with open(filename, 'r') as f:
+            lines = f.readlines()
+    return lines
 
-# set variables equal to command-line options
-filename = args.filename
-outfile = args.outfile
-
-# open the file to be edited, read out by line, copy to 'lines' var
-with open(filename, 'r') as f:
-    lines = f.readlines()
-
-# remove the last character - the line terminator - from each line
-for line in lines:
-    line = line[:-1]
-
-# write the output to a new file, keeping the same filename and appending 
-# '.term' to the end
-if outfile == sys.stdout:
+def rem_end(lines):
+    """Remove the last character from each line"""
     for line in lines:
-        sys.stdout.write(line)
-else:
-    with open(outfile, 'w') as f:
+        line = line[:-1]
+    return lines
+
+def write_output(outfile, lines):
+    """Write output to the specified file"""
+    if outfile == sys.stdout:
         for line in lines:
-            f.write(line)
+            sys.stdout.write(line)
+    else:
+        with open(outfile, 'w') as f:
+            for line in lines:
+                f.write(line)
+
+if __name__ == '__main__':
+    args = parse_args()
+    
+    filename = args.filename
+    outfile = args.outfile
+
+    lines = read_input(filename)
+    lines = rem_end(lines)
+    write_output(outfile, lines)
